@@ -3,7 +3,6 @@ import { CountryCode, UserProfile, RecipientProfile, VirtualCard, BankAccount, T
 import { MOCK_USER_PROFILES, COUNTRIES, FX_RATES_TO_USD, BankDestination } from './data/mockData';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
-import { CountryContextSwitcher } from './components/CountryContextSwitcher';
 import { DashboardView } from './components/DashboardView';
 import { SendMoneyView } from './components/SendMoneyView';
 import { VirtualCardsView } from './components/VirtualCardsView';
@@ -11,6 +10,7 @@ import { KycVaultView } from './components/KycVaultView';
 import { TransactionsView } from './components/TransactionsView';
 import { ProfileView } from './components/ProfileView';
 import { SideDrawer } from './components/SideDrawer';
+import { BottomNav } from './components/BottomNav';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ApiHubModal } from './components/ApiHubModal';
 import { FxCalculatorModal } from './components/FxCalculatorModal';
@@ -20,7 +20,15 @@ import { Shield, Lock, Globe, Building2 } from 'lucide-react';
 export default function App() {
   const [currentCountry, setCurrentCountry] = useState<CountryCode>('GH');
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'SEND' | 'CARDS' | 'KYC' | 'TRANSACTIONS' | 'PROFILE'>('OVERVIEW');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const savedAuth = localStorage.getItem('mikpal_auth_state');
+    return savedAuth !== null ? JSON.parse(savedAuth) : true;
+  });
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
+
+  useEffect(() => {
+    localStorage.setItem('mikpal_auth_state', JSON.stringify(isAuthenticated));
+  }, [isAuthenticated]);
   const [showApiHub, setShowApiHub] = useState<boolean>(false);
   const [showFxCalc, setShowFxCalc] = useState<boolean>(false);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
@@ -396,7 +404,15 @@ export default function App() {
       [newProfile.country]: newProfile,
     }));
     setCurrentCountry(newProfile.country);
+    setIsAuthenticated(true);
+    setShowOnboarding(false);
     setActiveTab('OVERVIEW');
+  };
+
+  const handleSignOut = () => {
+    setIsAuthenticated(false);
+    setShowOnboarding(true);
+    setShowSideDrawer(false);
   };
 
   // 11. Update KYC Document & Verify Identity
@@ -437,14 +453,6 @@ export default function App() {
       {/* 2. MAIN RIGHT CONTENT CONTAINER */}
       <div className="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
         
-        {/* Regional Context Switcher Header Toolbar */}
-        <CountryContextSwitcher
-          currentCountry={currentCountry}
-          onSelectCountry={handleSelectCountry}
-          onOpenOnboarding={() => setShowOnboarding(true)}
-          onOpenApiHub={() => setShowApiHub(true)}
-        />
-
         {/* Top Header Bar */}
         <Header
           user={activeUser}
@@ -492,7 +500,7 @@ export default function App() {
               user={activeUser}
               onUpdateUser={handleUpdateUserProfile}
               onActivateUsdAccount={handleActivateUsdAccount}
-              onSignOut={() => setShowOnboarding(true)}
+              onSignOut={handleSignOut}
             />
           )}
 
@@ -509,7 +517,7 @@ export default function App() {
         </main>
 
         {/* Footer */}
-        <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 text-xs py-8 px-4 sm:px-6 mt-12">
+        <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 text-xs py-8 px-4 sm:px-6 mt-12 hidden md:block">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="font-bold text-slate-200">MIKPAL Fintech Ecosystem</span>
@@ -532,10 +540,22 @@ export default function App() {
 
       </div>
 
-      {/* Onboarding & KYC Simulator Modal */}
+      {/* Sticky Bottom Navigation Bar across all views */}
+      <BottomNav
+        activeTab={activeTab}
+        onChangeTab={setActiveTab}
+        user={activeUser}
+        onOpenSideDrawer={() => setShowSideDrawer(true)}
+      />
+
+      {/* Onboarding & Mandatory Auth Gate Modal */}
       <OnboardingModal
-        isOpen={showOnboarding}
-        onClose={() => setShowOnboarding(false)}
+        isOpen={showOnboarding || !isAuthenticated}
+        onClose={() => {
+          if (isAuthenticated) {
+            setShowOnboarding(false);
+          }
+        }}
         onCompleteOnboarding={handleCompleteOnboarding}
       />
 
@@ -570,7 +590,7 @@ export default function App() {
         onOpenApiHub={() => setShowApiHub(true)}
         onOpenOnboarding={() => setShowOnboarding(true)}
         onOpenFxCalc={() => setShowFxCalc(true)}
-        onSignOut={() => setShowOnboarding(true)}
+        onSignOut={handleSignOut}
       />
 
     </div>

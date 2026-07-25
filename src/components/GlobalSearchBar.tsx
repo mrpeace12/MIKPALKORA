@@ -95,7 +95,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          placeholder="🔍 Search transactions, contacts, or features..."
+          placeholder="Search contacts, banks or features..."
           className="w-full pl-11 pr-10 py-3 bg-white border border-slate-200/90 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F26522] shadow-xs transition"
         />
         {searchQuery && (

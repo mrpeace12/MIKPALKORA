@@ -4,6 +4,7 @@ import { RECIPIENTS, FX_RATES_TO_USD, COUNTRIES, REGIONAL_BANKS, BankDestination
 import { PinVerificationModal } from './PinVerificationModal';
 import { GlobalSearchBar } from './GlobalSearchBar';
 import { Logo } from './Logo';
+import { PaymentChannelBadge } from './PaymentLogos';
 import {
   Send,
   Search,
@@ -346,89 +347,48 @@ export const SendMoneyView: React.FC<SendMoneyViewProps> = ({
           {/* ================= MODE 1: VIRTUAL BANK & EXTERNAL PAYOUT ================= */}
           {transferMode === 'BANK_PAYOUT' && (
             <>
-              {/* STEP 1: Select Source (Virtual Bank Account or Wallet) */}
+              {/* STEP 1: Select Source (Wallet Balances) */}
               <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-[#F26522]" />
-                    <span>1. Debit Source (Virtual Account / Wallet)</span>
+                    <Wallet className="w-4 h-4 text-[#F26522]" />
+                    <span>1. Debit Source (Wallet Balance)</span>
                   </label>
                   <span className="text-[11px] text-slate-400 font-mono">
-                    Available: {payoutAvailableBalance.toLocaleString()} {payoutDebitCurrency}
+                    Available: {payoutAvailableBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} {payoutDebitCurrency}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Virtual Bank Accounts List */}
-                  {user.bankAccounts.map((acc) => {
-                    const isSelected = payoutDebitSource === acc.id;
-                    const wallet = user.wallets[acc.currency] || { available: 0, currencySymbol: '$' };
-
-                    return (
-                      <button
-                        type="button"
-                        key={acc.id}
-                        onClick={() => setPayoutDebitSource(acc.id)}
-                        className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between space-y-2 ${
-                          isSelected
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                            : 'bg-slate-50 hover:bg-slate-100 text-slate-900 border-slate-200'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
-                            isSelected ? 'bg-[#00796B] text-white' : 'bg-slate-200 text-slate-700'
-                          }`}>
-                            VIRTUAL BANK
-                          </span>
-                          <span className="font-mono text-xs font-bold">{acc.currency}</span>
-                        </div>
-
-                        <div>
-                          <p className="font-bold text-xs truncate">{acc.bankName}</p>
-                          <p className={`text-[11px] font-mono ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
-                            Acc: {acc.accountNumber}
-                          </p>
-                        </div>
-
-                        <p className={`text-xs font-black font-mono pt-1 ${isSelected ? 'text-emerald-400' : 'text-slate-800'}`}>
-                          Bal: {wallet.currencySymbol}{wallet.available.toLocaleString()}
-                        </p>
-                      </button>
-                    );
-                  })}
-
-                  {/* Fallback Wallets */}
                   {userWalletKeys.map((curr) => {
                     const w = user.wallets[curr];
-                    const isSelected = payoutDebitSource === curr;
+                    const isSelected = payoutDebitSource === curr || payoutDebitSource === user.bankAccounts.find(b => b.currency === curr)?.id;
                     return (
                       <button
                         type="button"
                         key={curr}
                         onClick={() => setPayoutDebitSource(curr)}
-                        className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between space-y-2 ${
+                        className={`p-4 rounded-2xl border text-left transition flex items-center justify-between ${
                           isSelected
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-[#F26522]'
                             : 'bg-slate-50 hover:bg-slate-100 text-slate-900 border-slate-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
-                            isSelected ? 'bg-[#F26522] text-white' : 'bg-slate-200 text-slate-700'
-                          }`}>
-                            {w.flag} {curr} WALLET
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{w.flag}</span>
+                          <div>
+                            <span className="font-extrabold text-sm block">{curr} Wallet</span>
+                            <span className={`text-[11px] ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+                              Available Ledger
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span className={`text-sm font-black font-mono block ${isSelected ? 'text-emerald-400' : 'text-slate-900'}`}>
+                            {w.currencySymbol}{w.available.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </span>
                         </div>
-
-                        <div>
-                          <p className="font-bold text-xs">{curr} Currency Balance</p>
-                          <p className={`text-[11px] ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>Direct Wallet Debit</p>
-                        </div>
-
-                        <p className={`text-xs font-black font-mono pt-1 ${isSelected ? 'text-emerald-400' : 'text-slate-800'}`}>
-                          Bal: {w.currencySymbol}{w.available.toLocaleString()}
-                        </p>
                       </button>
                     );
                   })}
@@ -447,7 +407,7 @@ export const SendMoneyView: React.FC<SendMoneyViewProps> = ({
                   <label className="block text-xs font-semibold text-slate-600 mb-1">
                     Destination Region
                   </label>
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {Object.keys(COUNTRIES).map((cCode) => {
                       const c = COUNTRIES[cCode as keyof typeof COUNTRIES];
                       const isSel = destCountry === cCode;
@@ -462,14 +422,14 @@ export const SendMoneyView: React.FC<SendMoneyViewProps> = ({
                               setSelectedBank(banks[0]);
                             }
                           }}
-                          className={`py-2 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition ${
+                          className={`py-2.5 px-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-2 transition cursor-pointer ${
                             isSel
                               ? 'bg-[#F26522] text-white border-[#F26522] shadow-xs'
                               : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                         >
-                          <span>{c.flag}</span>
-                          <span>{c.code}</span>
+                          <span className="text-base">{c.flag}</span>
+                          <span>{c.name}</span>
                         </button>
                       );
                     })}
@@ -483,17 +443,24 @@ export const SendMoneyView: React.FC<SendMoneyViewProps> = ({
                     <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Select Bank / Mobile Money Provider
                     </label>
-                    <select
-                      value={selectedBank.code}
-                      onChange={(e) => handleBankChange(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#F26522] outline-none"
-                    >
-                      {countryBanks.map((b) => (
-                        <option key={b.code} value={b.code}>
-                          {b.type === 'MOBILE_MONEY' ? '📱' : '🏦'} {b.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="space-y-2">
+                      <select
+                        value={selectedBank.code}
+                        onChange={(e) => handleBankChange(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#F26522] outline-none"
+                      >
+                        {countryBanks.map((b) => (
+                          <option key={b.code} value={b.code}>
+                            {b.type === 'MOBILE_MONEY' ? '📱 Mobile Money' : '🏦 Bank'} — {b.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase">Provider Logo:</span>
+                        <PaymentChannelBadge providerCode={selectedBank.code} name={selectedBank.name} type={selectedBank.type} />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Account / NUBAN / Mobile Number Input */}
@@ -564,17 +531,20 @@ export const SendMoneyView: React.FC<SendMoneyViewProps> = ({
                 </div>
               </div>
 
-              {/* SUBMIT BUTTON */}
+              {/* DYNAMIC ACTION BUTTON */}
               <button
                 type="submit"
                 disabled={numPayoutSend <= 0 || !accountNumber}
-                className={`w-full py-4 font-extrabold text-base rounded-2xl shadow-lg transition flex items-center justify-center gap-2 ${
+                className={`w-full py-4 font-extrabold text-base rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer ${
                   numPayoutSend > 0 && accountNumber
                     ? 'bg-gradient-to-r from-[#F26522] to-[#E85D04] hover:opacity-95 text-white shadow-orange-500/25'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >
-                <span>Authorize Virtual Bank Payout</span>
+                <span>
+                  Send {COUNTRIES[destCountry as keyof typeof COUNTRIES]?.currencySymbol || ''}
+                  {payoutReceiveAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {destCurrency}
+                </span>
                 <ArrowRight className="w-5 h-5" />
               </button>
             </>
@@ -739,13 +709,17 @@ export const SendMoneyView: React.FC<SendMoneyViewProps> = ({
               <button
                 type="submit"
                 disabled={!selectedRecipient || numP2pSend <= 0}
-                className={`w-full py-4 font-extrabold text-base rounded-2xl shadow-lg transition flex items-center justify-center gap-2 ${
+                className={`w-full py-4 font-extrabold text-base rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer ${
                   selectedRecipient && numP2pSend > 0
                     ? 'bg-gradient-to-r from-[#F26522] to-[#E85D04] hover:opacity-95 text-white shadow-orange-500/25'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >
-                <span>Authorize Internal P2P Transfer</span>
+                <span>
+                  {selectedRecipient && numP2pSend > 0
+                    ? `Transfer ${p2pDebitCurrency} ${numP2pSend.toFixed(2)} to @${selectedRecipient.username}`
+                    : 'Authorize Internal P2P Transfer'}
+                </span>
                 <ArrowRight className="w-5 h-5" />
               </button>
             </>

@@ -217,8 +217,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onClick={() => handleGuardedAction('issuing virtual cards', () => onNavigateTab('CARDS'))}
               className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-black text-xs rounded-2xl shadow-md transition active:scale-95"
             >
-              <CreditCard className="w-4 h-4 text-amber-400" />
-              <span>💳 Manage Cards</span>
+              <span>Manage Cards</span>
             </button>
           </div>
 
@@ -238,13 +237,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         </div>
       </div>
-
-      {/* 2. VIRTUAL BANK ACCOUNT ROUTING ENGINE CARDS */}
-      <BankAccountCards
-        user={user}
-        onActivateUsdAccount={onActivateUsdAccount}
-        onDepositFunds={onDepositFunds}
-      />
 
       {/* 3. RECENT ACTIVITY SECTION FOR SELECTED CURRENCY */}
       <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
