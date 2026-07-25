@@ -15,6 +15,7 @@ import { OnboardingModal } from './components/OnboardingModal';
 import { ApiHubModal } from './components/ApiHubModal';
 import { FxCalculatorModal } from './components/FxCalculatorModal';
 import { DepositModal } from './components/DepositModal';
+import { LandingPage } from './components/LandingPage';
 import { Shield, Lock, Globe, Building2 } from 'lucide-react';
 
 export default function App() {
@@ -22,9 +23,10 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'SEND' | 'CARDS' | 'KYC' | 'TRANSACTIONS' | 'PROFILE'>('OVERVIEW');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     const savedAuth = localStorage.getItem('mikpal_auth_state');
-    return savedAuth !== null ? JSON.parse(savedAuth) : true;
+    return savedAuth !== null ? JSON.parse(savedAuth) : false;
   });
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
+  const [authMode, setAuthMode] = useState<'SIGN_UP' | 'LOGIN'>('SIGN_UP');
 
   useEffect(() => {
     localStorage.setItem('mikpal_auth_state', JSON.stringify(isAuthenticated));
@@ -452,7 +454,7 @@ export default function App() {
 
   const handleSignOut = () => {
     setIsAuthenticated(false);
-    setShowOnboarding(true);
+    setShowOnboarding(false);
     setShowSideDrawer(false);
   };
 
@@ -478,6 +480,52 @@ export default function App() {
     }));
   };
 
+  // UNAUTHENTICATED ROUTE GUARD: Show Public Landing Page
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
+        <LandingPage
+          onOpenSignUp={() => {
+            setAuthMode('SIGN_UP');
+            setShowOnboarding(true);
+          }}
+          onOpenSignIn={() => {
+            setAuthMode('LOGIN');
+            setShowOnboarding(true);
+          }}
+          onSelectDemoUser={(countryCode) => {
+            setCurrentCountry(countryCode);
+            setIsAuthenticated(true);
+            setActiveTab('OVERVIEW');
+          }}
+          onOpenFxCalc={() => setShowFxCalc(true)}
+          onOpenApiHub={() => setShowApiHub(true)}
+        />
+
+        {/* Onboarding & Sign In Modal */}
+        <OnboardingModal
+          isOpen={showOnboarding}
+          initialMode={authMode}
+          onClose={() => setShowOnboarding(false)}
+          onCompleteOnboarding={handleCompleteOnboarding}
+        />
+
+        {/* Developer API Hub Modal */}
+        <ApiHubModal
+          isOpen={showApiHub}
+          onClose={() => setShowApiHub(false)}
+        />
+
+        {/* Real-Time FX Calculator Modal */}
+        <FxCalculatorModal
+          isOpen={showFxCalc}
+          onClose={() => setShowFxCalc(false)}
+        />
+      </div>
+    );
+  }
+
+  // AUTHENTICATED ROUTE: Show Protected Dashboard Workspace
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-slate-900 font-sans flex antialiased selection:bg-[#F26522] selection:text-white">
       
@@ -487,7 +535,10 @@ export default function App() {
         activeTab={activeTab}
         onChangeTab={setActiveTab}
         onOpenApiHub={() => setShowApiHub(true)}
-        onOpenOnboarding={() => setShowOnboarding(true)}
+        onOpenOnboarding={() => {
+          setAuthMode('SIGN_UP');
+          setShowOnboarding(true);
+        }}
         onOpenFxCalc={() => setShowFxCalc(true)}
       />
 
@@ -500,7 +551,10 @@ export default function App() {
           activeTab={activeTab}
           onChangeTab={setActiveTab}
           onOpenApiHub={() => setShowApiHub(true)}
-          onOpenOnboarding={() => setShowOnboarding(true)}
+          onOpenOnboarding={() => {
+            setAuthMode('SIGN_UP');
+            setShowOnboarding(true);
+          }}
           onOpenFxCalc={() => setShowFxCalc(true)}
           onOpenSideDrawer={() => setShowSideDrawer(true)}
         />
@@ -590,14 +644,11 @@ export default function App() {
         onOpenSideDrawer={() => setShowSideDrawer(true)}
       />
 
-      {/* Onboarding & Mandatory Auth Gate Modal */}
+      {/* Onboarding & Auth Modal */}
       <OnboardingModal
-        isOpen={showOnboarding || !isAuthenticated}
-        onClose={() => {
-          if (isAuthenticated) {
-            setShowOnboarding(false);
-          }
-        }}
+        isOpen={showOnboarding}
+        initialMode={authMode}
+        onClose={() => setShowOnboarding(false)}
         onCompleteOnboarding={handleCompleteOnboarding}
       />
 
@@ -630,7 +681,10 @@ export default function App() {
         onChangeTab={setActiveTab}
         onUpdateUser={handleUpdateUserProfile}
         onOpenApiHub={() => setShowApiHub(true)}
-        onOpenOnboarding={() => setShowOnboarding(true)}
+        onOpenOnboarding={() => {
+          setAuthMode('SIGN_UP');
+          setShowOnboarding(true);
+        }}
         onOpenFxCalc={() => setShowFxCalc(true)}
         onSignOut={handleSignOut}
       />
