@@ -10,21 +10,15 @@ import {
   User,
   ShieldCheck,
   History,
-  DollarSign,
-  KeyRound,
-  Lock,
-  Fingerprint,
-  LogOut,
-  Edit2,
-  ChevronRight,
-  CheckCircle2,
-  AlertTriangle,
   Calculator,
   Globe,
   Code,
-  Check,
-  Building2,
-  Sparkles
+  CheckCircle2,
+  Headphones,
+  FileText,
+  Shield,
+  ChevronRight,
+  MessageSquare
 } from 'lucide-react';
 
 interface SideDrawerProps {
@@ -46,36 +40,22 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
   user,
   activeTab,
   onChangeTab,
-  onUpdateUser,
   onOpenApiHub,
   onOpenOnboarding,
   onOpenFxCalc,
-  onSignOut,
 }) => {
   if (!isOpen) return null;
 
   const countryInfo = COUNTRIES[user.country];
   const isVerified = user.kycStatus === 'VERIFIED';
 
-  // Sub-modal states inside Side Drawer
-  const [showPersonalInfoModal, setShowPersonalInfoModal] = useState<boolean>(false);
-  const [showChangePasswordModal, setShowChangePasswordModal] = useState<boolean>(false);
-  const [showPinModal, setShowPinModal] = useState<boolean>(false);
+  const [showSupportModal, setShowSupportModal] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Personal Info Form State
-  const [fullNameInput, setFullNameInput] = useState<string>(user.fullName);
-  const [emailInput, setEmailInput] = useState<string>(user.email);
-  const [phoneInput, setPhoneInput] = useState<string>(user.phone);
-
-  // Password Form State
-  const [currentPassword, setCurrentPassword] = useState<string>('');
-  const [newPassword, setNewPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [passwordSuccess, setPasswordSuccess] = useState<boolean>(false);
-
-  // PIN Form State
-  const [newPinInput, setNewPinInput] = useState<string>('');
-  const [pinSuccess, setPinSuccess] = useState<boolean>(false);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 2500);
+  };
 
   const navMenuItems = [
     {
@@ -122,73 +102,17 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
     },
   ];
 
-  const handleSelectPreferredCurrency = (curr: string) => {
-    onUpdateUser({
-      ...user,
-      preferredCurrency: curr,
-    });
-  };
-
-  const handleToggleBiometric = () => {
-    onUpdateUser({
-      ...user,
-      biometricEnabled: !(user.biometricEnabled ?? true),
-    });
-  };
-
-  const handleSavePersonalInfo = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdateUser({
-      ...user,
-      // If KYC verified, retain official verified name
-      fullName: isVerified ? user.fullName : fullNameInput,
-      email: emailInput,
-      phone: phoneInput,
-    });
-    setShowPersonalInfoModal(false);
-  };
-
-  const handleChangePassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      alert('New passwords do not match');
-      return;
-    }
-    if (newPassword.length < 6) {
-      alert('Password must be at least 6 characters');
-      return;
-    }
-    setPasswordSuccess(true);
-    setTimeout(() => {
-      setPasswordSuccess(false);
-      setShowChangePasswordModal(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    }, 1200);
-  };
-
-  const handleSavePin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPinInput.length !== 4 || !/^\d+$/.test(newPinInput)) {
-      alert('PIN must be exactly 4 digits');
-      return;
-    }
-    onUpdateUser({
-      ...user,
-      securityPin: newPinInput,
-    });
-    setPinSuccess(true);
-    setTimeout(() => {
-      setPinSuccess(false);
-      setShowPinModal(false);
-      setNewPinInput('');
-    }, 1200);
-  };
-
   return (
     <div className="fixed inset-0 z-50 overflow-hidden animate-in fade-in duration-200">
       
+      {/* Toast Banner */}
+      {toastMessage && (
+        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-2xl border border-slate-700 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
@@ -201,12 +125,12 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
         {/* Top Drawer Header */}
         <div className="p-4 sm:p-6 bg-slate-900 text-white flex items-center justify-between sticky top-0 z-10 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="bg-white/10 p-1.5 rounded-2xl border border-white/20 backdrop-blur-sm">
+            <div className="bg-white/10 p-1.5 rounded-2xl border border-white/20 backdrop-blur-xs">
               <Logo size="sm" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm tracking-tight text-white">MIKPAL Account Hub</h3>
-              <p className="text-[11px] text-slate-400">Drawer Navigation & Settings</p>
+              <h3 className="font-extrabold text-sm tracking-tight text-white">MIKPAL Utility Hub</h3>
+              <p className="text-[11px] text-slate-400">Quick Tools & System Navigation</p>
             </div>
           </div>
 
@@ -223,70 +147,170 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
         <div className="p-5 space-y-6 flex-1">
           
           {/* User Profile Card Header */}
-          <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100/90 rounded-2xl border border-slate-200/90 flex items-center gap-3.5 relative overflow-hidden">
+          <div
+            onClick={() => {
+              onChangeTab('PROFILE');
+              onClose();
+            }}
+            className="p-4 bg-gradient-to-br from-slate-50 to-slate-100/90 rounded-2xl border border-slate-200/90 flex items-center gap-3.5 relative overflow-hidden cursor-pointer hover:border-slate-300 transition group"
+          >
             <img
               src={user.avatar}
               alt={user.fullName}
-              className="w-14 h-14 rounded-full object-cover ring-2 ring-[#F26522]/30 shadow-sm shrink-0"
+              className="w-12 h-12 rounded-full object-cover ring-2 ring-[#F26522]/30 shadow-xs shrink-0"
             />
-            <div className="min-w-0 flex-1 space-y-1">
+            <div className="min-w-0 flex-1 space-y-0.5">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h4 className="font-black text-slate-900 text-sm truncate">{user.fullName}</h4>
+                <h4 className="font-black text-slate-900 text-sm truncate group-hover:text-[#F26522] transition">
+                  {user.fullName}
+                </h4>
                 {isVerified && (
                   <span
                     className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-black rounded-full border border-emerald-300"
-                    title="Official KYC Verified Name"
+                    title="Official KYC Verified"
                   >
                     <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    <span>Verified Name</span>
+                    <span>Tier-2 Verified</span>
                   </span>
                 )}
               </div>
 
               <p className="text-xs font-mono text-slate-500 font-bold truncate">@{user.username}</p>
 
-              <div className="flex items-center gap-2 text-[11px] text-slate-600 flex-wrap">
+              <div className="flex items-center gap-2 text-[11px] text-slate-600">
                 <span className="font-bold flex items-center gap-1">
                   <span>{countryInfo.flag}</span>
-                  <span>{countryInfo.name}</span>
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="font-bold text-slate-700">
-                  {isVerified ? 'Tier-2 Verified' : 'Tier 0 Pending'}
+                  <span>{countryInfo.name} Market</span>
                 </span>
               </div>
             </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition" />
           </div>
 
-          {/* Quick Actions Bar */}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => {
-                onOpenFxCalc();
-                onClose();
-              }}
-              className="p-2.5 bg-orange-50 hover:bg-orange-100 text-[#F26522] rounded-xl border border-orange-200 text-xs font-extrabold flex items-center justify-center gap-1.5 transition cursor-pointer"
-            >
-              <Calculator className="w-3.5 h-3.5" />
-              <span>Live FX Rates</span>
-            </button>
+          {/* GLOBAL UTILITIES & TOOLS (REPURPOSED DRAWER HUB) */}
+          <div className="space-y-2">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-1">
+              Global Utilities & Tools
+            </p>
 
-            <button
-              onClick={() => {
-                onOpenOnboarding();
-                onClose();
-              }}
-              className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl border border-slate-200 text-xs font-extrabold flex items-center justify-center gap-1.5 transition cursor-pointer"
-            >
-              <Globe className="w-3.5 h-3.5 text-teal-600" />
-              <span>Switch Market</span>
-            </button>
+            <div className="grid grid-cols-2 gap-2.5">
+              {/* 1. Live FX Calculator */}
+              <button
+                onClick={() => {
+                  onOpenFxCalc();
+                  onClose();
+                }}
+                className="p-3 bg-slate-50 hover:bg-orange-50/70 border border-slate-200/90 hover:border-orange-200 rounded-2xl text-left transition flex flex-col justify-between space-y-2 cursor-pointer group"
+              >
+                <div className="p-2 bg-orange-100 text-[#F26522] rounded-xl w-fit group-hover:scale-105 transition">
+                  <Calculator className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-slate-900 group-hover:text-[#F26522] transition">
+                    Live FX Rates
+                  </p>
+                  <p className="text-[10px] text-slate-500">Cross-currency converter</p>
+                </div>
+              </button>
+
+              {/* 2. KYC Vault & Limits */}
+              <button
+                onClick={() => {
+                  onChangeTab('KYC');
+                  onClose();
+                }}
+                className="p-3 bg-slate-50 hover:bg-emerald-50/70 border border-slate-200/90 hover:border-emerald-200 rounded-2xl text-left transition flex flex-col justify-between space-y-2 cursor-pointer group"
+              >
+                <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl w-fit group-hover:scale-105 transition">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-slate-900 group-hover:text-emerald-800 transition">
+                    KYC & Limits
+                  </p>
+                  <p className="text-[10px] text-slate-500">Tier verification vault</p>
+                </div>
+              </button>
+
+              {/* 3. Activity Logs & Statements */}
+              <button
+                onClick={() => {
+                  onChangeTab('TRANSACTIONS');
+                  onClose();
+                }}
+                className="p-3 bg-slate-50 hover:bg-blue-50/70 border border-slate-200/90 hover:border-blue-200 rounded-2xl text-left transition flex flex-col justify-between space-y-2 cursor-pointer group"
+              >
+                <div className="p-2 bg-blue-100 text-blue-700 rounded-xl w-fit group-hover:scale-105 transition">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-slate-900 group-hover:text-blue-800 transition">
+                    Statements
+                  </p>
+                  <p className="text-[10px] text-slate-500">Download audit logs</p>
+                </div>
+              </button>
+
+              {/* 4. Developer API Hub */}
+              <button
+                onClick={() => {
+                  onOpenApiHub();
+                  onClose();
+                }}
+                className="p-3 bg-slate-50 hover:bg-purple-50/70 border border-slate-200/90 hover:border-purple-200 rounded-2xl text-left transition flex flex-col justify-between space-y-2 cursor-pointer group"
+              >
+                <div className="p-2 bg-purple-100 text-purple-700 rounded-xl w-fit group-hover:scale-105 transition">
+                  <Code className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-slate-900 group-hover:text-purple-800 transition">
+                    Developer Sandbox
+                  </p>
+                  <p className="text-[10px] text-slate-500">API keys & Webhooks</p>
+                </div>
+              </button>
+
+              {/* 5. Help & Live Support */}
+              <button
+                onClick={() => setShowSupportModal(true)}
+                className="p-3 bg-slate-50 hover:bg-teal-50/70 border border-slate-200/90 hover:border-teal-200 rounded-2xl text-left transition flex flex-col justify-between space-y-2 cursor-pointer group"
+              >
+                <div className="p-2 bg-teal-100 text-[#00796B] rounded-xl w-fit group-hover:scale-105 transition">
+                  <Headphones className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-slate-900 group-hover:text-[#00796B] transition">
+                    Help & Support
+                  </p>
+                  <p className="text-[10px] text-slate-500">24/7 Dispute Desk</p>
+                </div>
+              </button>
+
+              {/* 6. Switch Regional Market */}
+              <button
+                onClick={() => {
+                  onOpenOnboarding();
+                  onClose();
+                }}
+                className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-2xl text-left transition flex flex-col justify-between space-y-2 cursor-pointer group"
+              >
+                <div className="p-2 bg-slate-200 text-slate-800 rounded-xl w-fit group-hover:scale-105 transition">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-extrabold text-xs text-slate-900 transition">
+                    Switch Market
+                  </p>
+                  <p className="text-[10px] text-slate-500">{countryInfo.code} Regional Profile</p>
+                </div>
+              </button>
+            </div>
           </div>
 
           {/* MAIN APP NAVIGATION TABS */}
-          <div className="space-y-1">
+          <div className="space-y-1 pt-2 border-t border-slate-100">
             <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-1 mb-2">
-              Main Menu
+              Navigation Menu
             </p>
 
             {navMenuItems.map((item) => {
@@ -339,346 +363,69 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
             })}
           </div>
 
-          {/* MOVED ACCOUNT SETTINGS BLOCK */}
-          <div className="pt-4 border-t border-slate-200 space-y-3">
-            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-1">
-              Account Settings & Preferences
-            </p>
-
-            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/80 space-y-4">
-              
-              {/* 1. Preferred Display Currency */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-orange-100 text-[#F26522] rounded-xl shrink-0">
-                    <DollarSign className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-xs text-slate-900">Display Currency</p>
-                    <p className="text-[10px] text-slate-500">Wallet preview unit</p>
-                  </div>
-                </div>
-
-                <select
-                  value={user.preferredCurrency || countryInfo.currency}
-                  onChange={(e) => handleSelectPreferredCurrency(e.target.value)}
-                  className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#F26522]"
-                >
-                  <option value="GHS">GHS (₵)</option>
-                  <option value="NGN">NGN (₦)</option>
-                  <option value="KES">KES (KSh)</option>
-                  <option value="ZAR">ZAR (R)</option>
-                  <option value="USD">USD ($)</option>
-                </select>
-              </div>
-
-              {/* 2. Email & Info Edit */}
-              <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="p-2 bg-teal-100 text-[#00796B] rounded-xl shrink-0">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-bold text-xs text-slate-900">Email & Profile Info</p>
-                    <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setShowPersonalInfoModal(true)}
-                  className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition shrink-0 flex items-center gap-1 cursor-pointer"
-                >
-                  <Edit2 className="w-3 h-3" />
-                  <span>Edit</span>
-                </button>
-              </div>
-
-              {/* 3. Change Password */}
-              <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-purple-100 text-purple-700 rounded-xl shrink-0">
-                    <KeyRound className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-xs text-slate-900">Account Password</p>
-                    <p className="text-[10px] text-slate-500">Sign-in security credential</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setShowChangePasswordModal(true)}
-                  className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition shrink-0 flex items-center gap-1 cursor-pointer"
-                >
-                  <span>Update</span>
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-
-              {/* 4. 4-Digit Transaction PIN (No raw PIN exposed!) */}
-              <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-amber-100 text-amber-700 rounded-xl shrink-0">
-                    <Lock className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-xs text-slate-900">4-Digit Transaction PIN</p>
-                    <p className="text-[10px] text-slate-500">Protected 256-bit payout PIN</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setShowPinModal(true)}
-                  className="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl transition shrink-0 cursor-pointer"
-                >
-                  Change PIN
-                </button>
-              </div>
-
-              {/* 5. Biometric Toggle */}
-              <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl shrink-0">
-                    <Fingerprint className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-xs text-slate-900">Biometrics</p>
-                    <p className="text-[10px] text-slate-500">Face ID / Touch ID authorization</p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleToggleBiometric}
-                  className={`w-11 h-6 rounded-full transition-colors p-1 flex items-center cursor-pointer ${
-                    (user.biometricEnabled ?? true) ? 'bg-[#00796B] justify-end' : 'bg-slate-300 justify-start'
-                  }`}
-                >
-                  <div className="w-4 h-4 rounded-full bg-white shadow-md" />
-                </button>
-              </div>
-
+          {/* FOOTER COMPLIANCE INFO */}
+          <div className="pt-4 border-t border-slate-200 space-y-2 text-center text-[11px] text-slate-400 font-medium">
+            <div className="flex items-center justify-center gap-2">
+              <Shield className="w-3.5 h-3.5 text-emerald-500" />
+              <span>PCI-DSS Level 1 Compliant</span>
             </div>
-          </div>
-
-          {/* DEVELOPER HUB & SYSTEM ACTIONS */}
-          <div className="pt-2 space-y-2">
-            <button
-              onClick={() => {
-                onOpenApiHub();
-                onClose();
-              }}
-              className="w-full p-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold flex items-center justify-between transition cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                <Code className="w-4 h-4 text-emerald-400" />
-                <span>Developer API Sandbox Hub</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
-            </button>
-
-            {/* SIGN OUT BUTTON */}
-            <button
-              onClick={() => {
-                onSignOut();
-                onClose();
-              }}
-              className="w-full p-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 border border-red-200 transition cursor-pointer"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out of Account</span>
-            </button>
+            <p>MIKPAL Regional Fintech Infrastructure © 2026</p>
           </div>
 
         </div>
       </div>
 
-      {/* EDIT PERSONAL INFO SUB-MODAL */}
-      {showPersonalInfoModal && (
+      {/* SUPPORT MODAL FROM DRAWER */}
+      {showSupportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-5 relative text-left">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 space-y-5 relative text-left">
             <button
-              onClick={() => setShowPersonalInfoModal(false)}
+              onClick={() => setShowSupportModal(false)}
               className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-lg font-extrabold text-slate-900">Edit Personal Information</h3>
-
-            <form onSubmit={handleSavePersonalInfo} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center justify-between">
-                  <span>Full Name</span>
-                  {isVerified && (
-                    <span className="text-[10px] text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span>Verified Name (Locked)</span>
-                    </span>
-                  )}
-                </label>
-                {isVerified ? (
-                  <div className="p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-between">
-                    <span>{user.fullName}</span>
-                    <Lock className="w-4 h-4 text-slate-400" />
-                  </div>
-                ) : (
-                  <input
-                    type="text"
-                    required
-                    value={fullNameInput}
-                    onChange={(e) => setFullNameInput(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#F26522] outline-none"
-                  />
-                )}
-                {isVerified && (
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Name is officially locked to {countryInfo.kycDocName} government document verification.
-                  </p>
-                )}
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-teal-100 text-[#00796B] rounded-2xl">
+                <Headphones className="w-6 h-6" />
               </div>
-
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#F26522] outline-none"
-                />
+                <h3 className="text-lg font-extrabold text-slate-900">MIKPAL Support Desk</h3>
+                <p className="text-xs text-slate-500">24/7 Live Assistance & Dispute Resolution</p>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number</label>
-                <input
-                  type="text"
-                  required
-                  value={phoneInput}
-                  onChange={(e) => setPhoneInput(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#F26522] outline-none"
-                />
-              </div>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowSupportModal(false);
+                  showToast('Connecting to live support agent...');
+                }}
+                className="w-full p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-left flex items-center gap-3 cursor-pointer transition"
+              >
+                <MessageSquare className="w-5 h-5 text-[#F26522]" />
+                <div>
+                  <p className="font-extrabold text-xs text-slate-900">Start Live Chat</p>
+                  <p className="text-[10px] text-slate-500">Connect with an agent in ~2 minutes</p>
+                </div>
+              </button>
 
               <button
-                type="submit"
-                className="w-full py-3 bg-[#F26522] hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer"
+                onClick={() => {
+                  setShowSupportModal(false);
+                  onChangeTab('TRANSACTIONS');
+                  onClose();
+                }}
+                className="w-full p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-left flex items-center gap-3 cursor-pointer transition"
               >
-                Save Changes
+                <Shield className="w-5 h-5 text-emerald-600" />
+                <div>
+                  <p className="font-extrabold text-xs text-slate-900">Dispute a Transaction</p>
+                  <p className="text-[10px] text-slate-500">Select transaction from activity logs</p>
+                </div>
               </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* CHANGE PASSWORD SUB-MODAL */}
-      {showChangePasswordModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-5 relative text-left">
-            <button
-              onClick={() => setShowChangePasswordModal(false)}
-              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h3 className="text-lg font-extrabold text-slate-900">Change Account Password</h3>
-
-            {passwordSuccess ? (
-              <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl border border-emerald-200 text-center font-bold text-xs flex items-center justify-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <span>Password updated successfully!</span>
-              </div>
-            ) : (
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Current Password</label>
-                  <input
-                    type="password"
-                    required
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#F26522] outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">New Password</label>
-                  <input
-                    type="password"
-                    required
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#F26522] outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Confirm Password</label>
-                  <input
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#F26522] outline-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-[#F26522] hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer"
-                >
-                  Update Password
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 4-DIGIT PIN SETUP SUB-MODAL */}
-      {showPinModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-5 relative text-left">
-            <button
-              onClick={() => setShowPinModal(false)}
-              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h3 className="text-lg font-extrabold text-slate-900">Update 4-Digit Security PIN</h3>
-            <p className="text-xs text-slate-500">
-              Set a new 4-digit PIN required for confirming payouts, card issuance, and high-value transactions.
-            </p>
-
-            {pinSuccess ? (
-              <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl border border-emerald-200 text-center font-bold text-xs flex items-center justify-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <span>Security PIN updated successfully!</span>
-              </div>
-            ) : (
-              <form onSubmit={handleSavePin} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">New 4-Digit PIN</label>
-                  <input
-                    type="password"
-                    maxLength={4}
-                    required
-                    value={newPinInput}
-                    onChange={(e) => setNewPinInput(e.target.value)}
-                    placeholder="• • • •"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-xl font-bold font-mono tracking-widest focus:ring-2 focus:ring-[#F26522] outline-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-[#00796B] hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer"
-                >
-                  Save New PIN
-                </button>
-              </form>
-            )}
+            </div>
           </div>
         </div>
       )}

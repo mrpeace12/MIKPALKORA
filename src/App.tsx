@@ -389,6 +389,47 @@ export default function App() {
     }
   };
 
+  // 8b. Terminate / Delete Virtual Card
+  const handleDeleteCard = (cardId: string) => {
+    const updatedUser = { ...activeUser };
+    const card = updatedUser.cards.find((c) => c.id === cardId);
+    if (card) {
+      // Refund remaining card balance back to USD wallet
+      if (card.balance > 0) {
+        if (!updatedUser.wallets['USD']) {
+          updatedUser.wallets['USD'] = {
+            currency: 'USD',
+            currencySymbol: '$',
+            available: 0,
+            pending: 0,
+            flag: '🇺🇸',
+          };
+        }
+        updatedUser.wallets['USD'].available += card.balance;
+      }
+      updatedUser.cards = updatedUser.cards.filter((c) => c.id !== cardId);
+
+      const newTxn: Transaction = {
+        id: `txn_card_del_${Date.now()}`,
+        reference: `MP-CRD-DEL-${Math.floor(100000 + Math.random() * 900000)}`,
+        title: `Terminated Virtual Card (•••• ${card.cardNumber.slice(-4)})`,
+        type: 'CARD_PURCHASE',
+        amount: card.balance,
+        currency: 'USD',
+        currencySymbol: '$',
+        fee: 0,
+        status: 'SUCCESS',
+        date: 'Just now',
+      };
+      updatedUser.transactions.unshift(newTxn);
+
+      setUserProfiles((prev) => ({
+        ...prev,
+        [activeUser.country]: updatedUser,
+      }));
+    }
+  };
+
   // 9. Update User Profile (from Profile & Settings)
   const handleUpdateUserProfile = (updatedUser: UserProfile) => {
     setUserProfiles((prev) => ({
@@ -492,6 +533,7 @@ export default function App() {
               onToggleFreezeCard={handleToggleFreezeCard}
               onTopUpCard={handleTopUpCard}
               onUpdateLimit={handleUpdateLimit}
+              onDeleteCard={handleDeleteCard}
             />
           )}
 

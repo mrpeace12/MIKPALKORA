@@ -1,6 +1,6 @@
 {
-  "name": "MIKPAL Fintech",
-  "description": "Effortless regional fintech dashboard & customer account ecosystem with country-isolated onboarding, virtual bank accounts, P2P transfers, and virtual debit cards.",
+  "name": "MIKPAL",
+  "description": "MIKPAL regional fintech platform with multi-currency virtual accounts, instant cross-border payouts, virtual Visa/Mastercard issuance, and developer API hub.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
