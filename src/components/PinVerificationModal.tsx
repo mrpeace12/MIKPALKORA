@@ -124,7 +124,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
           <Logo size="md" />
           <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 mt-1">
             <Lock className="w-3 h-3" />
-            <span>256-Bit Authorized Payment Checkout</span>
+            <span>Authorized Payment Checkout</span>
           </div>
         </div>
 

@@ -624,7 +624,7 @@ export default function App() {
             <div className="flex items-center gap-4 text-slate-400">
               <span className="flex items-center gap-1">
                 <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                <span>PCI-DSS Level 1 Encrypted</span>
+                <span>Bank-Grade Encryption</span>
               </span>
               <span className="flex items-center gap-1">
                 <Building2 className="w-3.5 h-3.5 text-teal-400" />

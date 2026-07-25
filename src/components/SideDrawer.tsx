@@ -367,9 +367,9 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
           <div className="pt-4 border-t border-slate-200 space-y-2 text-center text-[11px] text-slate-400 font-medium">
             <div className="flex items-center justify-center gap-2">
               <Shield className="w-3.5 h-3.5 text-emerald-500" />
-              <span>PCI-DSS Level 1 Compliant</span>
+              <span>Bank-Grade Encryption</span>
             </div>
-            <p>MIKPAL Regional Fintech Infrastructure © 2026</p>
+            <p>MIKPAL © 2026</p>
           </div>
 
         </div>

@@ -127,7 +127,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Trust Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-bold text-slate-300 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-emerald-400 font-extrabold">Bank-Grade 256-Bit Encryption</span>
+              <span className="text-emerald-400 font-extrabold">Instant Global Settlement</span>
               <span className="text-slate-600">•</span>
               <span>Zero-Markup FX Gateway</span>
             </div>
@@ -464,11 +464,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="flex flex-wrap items-center justify-center gap-8 text-slate-400 text-xs font-bold">
             <span className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>AES-256 Data Encryption</span>
+              <span>Secure Data Encryption</span>
             </span>
             <span className="flex items-center gap-2">
               <Lock className="w-4 h-4 text-teal-400" />
-              <span>256-Bit TLS Bank-Grade Vault</span>
+              <span>Bank-Grade Security Vault</span>
             </span>
             <span className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-purple-400" />
@@ -491,7 +491,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <p className="text-[11px] text-slate-400 leading-relaxed">
               MIKPAL is a next-generation regional financial infrastructure providing multi-currency accounts, zero-markup cross-border payouts, and virtual card issuance via certified payment partner rails.
             </p>
-            <p className="text-[10px] text-slate-400">© 2026 MIKPAL Inc. All rights reserved.</p>
+            <p className="text-[10px] text-slate-400">MIKPAL © 2026</p>
           </div>
 
           <div>

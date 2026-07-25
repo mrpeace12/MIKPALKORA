@@ -335,7 +335,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({
         <div className="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
           <span className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-emerald-600" />
-            <span>256-Bit PCI-DSS Encryption</span>
+            <span>TLS Bank-Grade Encryption</span>
           </span>
           <span className="font-bold text-slate-700">Zero Processing Fees</span>
         </div>

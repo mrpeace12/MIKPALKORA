@@ -569,7 +569,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <div>
                 <p className="font-bold text-xs sm:text-sm text-slate-900">4-Digit Transaction PIN</p>
                 <p className="text-xs text-slate-500">
-                  Protected 256-Bit Transaction Authorization PIN
+                  Protected Transaction Authorization PIN
                 </p>
               </div>
             </div>
