@@ -15,5 +15,8 @@
       "database_name": "mikpal-db",
       "database_id": "e730a464-4bf1-40e3-b976-4c5391b5bc33"
     }
-  ]
+  ],
+  "vars": {
+    "GOOGLE_CLIENT_ID": "103331962868-s7l2ofajl913v9kegilnj30mg29j9d23.apps.googleusercontent.com"
+  }
 }
