@@ -1,17 +1,5 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "mikpal-backend",
-  "main": "src/index.ts",
-  "compatibility_date": "2026-07-26",
-  "kv_namespaces": [
-    {
-      "binding": "RATE_LIMIT",
-      "id": "9fa1f043338442e08b8efcd59495d47f"
-    }
-  ]
-}
-{
-  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "mikpal",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-26",
