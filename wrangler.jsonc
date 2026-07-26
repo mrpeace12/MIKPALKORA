@@ -25,7 +25,7 @@
     {
       "binding": "DB",
       "database_name": "mikpal-db",
-      "database_id": "YOUR_DATABASE_ID_FROM_STEP_1"
+      "database_id": "e730a464-4bf1-40e3-b976-4c5391b5bc33"
     }
   ]
 }
