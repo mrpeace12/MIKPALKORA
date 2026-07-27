@@ -28,9 +28,69 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<'SIGN_UP' | 'LOGIN'>('SIGN_UP');
 
-  useEffect(() => {
-    localStorage.setItem('mikpal_auth_state', JSON.stringify(isAuthenticated));
-  }, [isAuthenticated]);
+  import { api } from './api';
+
+useEffect(() => {
+  const token = api.getToken();
+  if (token) {
+    api.me()
+      .then(data => {
+        setIsAuthenticated(true);
+        // Set user data from data.user
+      })
+      .catch(() => {
+        api.clearToken();
+        setIsAuthenticated(false);
+      });
+  }
+}, []);
+
+// Sign in function:
+const handleSignIn = async (email: string, password: string) => {
+  try {
+    const data = await api.signin(email, password);
+    api.setToken(data.token);
+    setIsAuthenticated(true);
+    // Set user data from data.user
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// Sign up function:
+const handleSignUp = async (email: string, password: string, full_name: string, username?: string) => {
+  try {
+    const data = await api.signup(email, password, full_name, username);
+    api.setToken(data.token);
+    setIsAuthenticated(true);
+    // Set user data from data.user
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// Sign out:
+const handleSignOut = async () => {
+  try {
+    await api.signout();
+  } catch {}
+  api.clearToken();
+  setIsAuthenticated(false);
+};
+
+// Load dashboard:
+const loadDashboard = async () => {
+  try {
+    const data = await api.getDashboard();
+    // data.user, data.wallets, data.recent_transactions, data.payment_channels
+  } catch (err) {
+    if (err.message.includes('Unauthorized')) {
+      api.clearToken();
+      setIsAuthenticated(false);
+    }
+  }
+};
+
   const [showApiHub, setShowApiHub] = useState<boolean>(false);
   const [showFxCalc, setShowFxCalc] = useState<boolean>(false);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
