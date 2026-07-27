@@ -168,7 +168,7 @@ export const VirtualCardsView: React.FC<VirtualCardsViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-[#F26522]" />
-            <span>Regional Virtual Debit Cards</span>
+            <span>Virtual Cards</span>
             <span className="text-xs bg-teal-50 text-[#00796B] px-2.5 py-0.5 rounded-full font-bold border border-teal-200">
               Visa & Mastercard
             </span>
@@ -864,7 +864,7 @@ export const VirtualCardsView: React.FC<VirtualCardsViewProps> = ({
         }
         subtitle={
           pendingAction?.type === 'ORDER_CARD'
-            ? `Confirm issuance of regional Virtual Card (${countryInfo.cardPriceLocal})`
+            ? `Confirm issuance of Virtual Card (${countryInfo.cardPriceLocal})`
             : pendingAction?.type === 'REVEAL_DETAILS'
             ? `Authenticate with Face ID / PIN to unmask PAN and CVV on card ending in ${activeCard?.cardNumber.slice(-4) || '••••'}`
             : pendingAction?.type === 'TERMINATE_CARD'

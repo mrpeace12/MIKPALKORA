@@ -7,14 +7,12 @@ interface CountryContextSwitcherProps {
   currentCountry: CountryCode;
   onSelectCountry: (country: CountryCode) => void;
   onOpenOnboarding: () => void;
-  onOpenApiHub: () => void;
 }
 
 export const CountryContextSwitcher: React.FC<CountryContextSwitcherProps> = ({
   currentCountry,
   onSelectCountry,
   onOpenOnboarding,
-  onOpenApiHub,
 }) => {
   return (
     <div className="bg-slate-900 text-slate-100 border-b border-slate-800 text-xs sm:text-sm py-2 px-3 sm:px-6">
@@ -25,7 +23,7 @@ export const CountryContextSwitcher: React.FC<CountryContextSwitcherProps> = ({
           <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <Globe2 className="w-4 h-4 text-[#F26522]" />
           <span className="font-medium text-slate-200">
-            Regional Context Preview Sandbox:
+            Regional Market Switcher:
           </span>
           <span className="hidden sm:inline-block text-slate-400 text-xs">
             (Demonstrating strict country-isolated KYC & VBA routing)
@@ -67,16 +65,6 @@ export const CountryContextSwitcher: React.FC<CountryContextSwitcherProps> = ({
           >
             <UserPlus className="w-3.5 h-3.5 text-teal-200" />
             <span>Simulate Sign-Up & KYC</span>
-          </button>
-
-          <button
-            id="api-hub-btn"
-            onClick={onOpenApiHub}
-            className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-full border border-slate-700 transition"
-            title="Inspect API Endpoints & Configuration"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden lg:inline">API Hub</span>
           </button>
         </div>
 

@@ -28,7 +28,6 @@ interface SideDrawerProps {
   activeTab: 'OVERVIEW' | 'SEND' | 'CARDS' | 'KYC' | 'TRANSACTIONS' | 'PROFILE';
   onChangeTab: (tab: 'OVERVIEW' | 'SEND' | 'CARDS' | 'KYC' | 'TRANSACTIONS' | 'PROFILE') => void;
   onUpdateUser: (updatedUser: UserProfile) => void;
-  onOpenApiHub: () => void;
   onOpenOnboarding: () => void;
   onOpenFxCalc: () => void;
   onSignOut: () => void;
@@ -40,7 +39,6 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
   user,
   activeTab,
   onChangeTab,
-  onOpenApiHub,
   onOpenOnboarding,
   onOpenFxCalc,
 }) => {
@@ -248,25 +246,6 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
                     Statements
                   </p>
                   <p className="text-[10px] text-slate-500">Download audit logs</p>
-                </div>
-              </button>
-
-              {/* 4. Developer API Hub */}
-              <button
-                onClick={() => {
-                  onOpenApiHub();
-                  onClose();
-                }}
-                className="p-3 bg-slate-50 hover:bg-purple-50/70 border border-slate-200/90 hover:border-purple-200 rounded-2xl text-left transition flex flex-col justify-between space-y-2 cursor-pointer group"
-              >
-                <div className="p-2 bg-purple-100 text-purple-700 rounded-xl w-fit group-hover:scale-105 transition">
-                  <Code className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="font-extrabold text-xs text-slate-900 group-hover:text-purple-800 transition">
-                    Developer Sandbox
-                  </p>
-                  <p className="text-[10px] text-slate-500">API keys & Webhooks</p>
                 </div>
               </button>
 

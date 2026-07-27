@@ -29,7 +29,6 @@ interface HeaderProps {
   user: UserProfile;
   activeTab: 'OVERVIEW' | 'SEND' | 'CARDS' | 'KYC' | 'TRANSACTIONS' | 'PROFILE';
   onChangeTab: (tab: 'OVERVIEW' | 'SEND' | 'CARDS' | 'KYC' | 'TRANSACTIONS' | 'PROFILE') => void;
-  onOpenApiHub: () => void;
   onOpenOnboarding: () => void;
   onOpenFxCalc: () => void;
   onOpenSideDrawer?: () => void;
@@ -39,7 +38,6 @@ export const Header: React.FC<HeaderProps> = ({
   user,
   activeTab,
   onChangeTab,
-  onOpenApiHub,
   onOpenOnboarding,
   onOpenFxCalc,
   onOpenSideDrawer,
@@ -159,7 +157,7 @@ export const Header: React.FC<HeaderProps> = ({
           <Logo size="sm" />
         </div>
 
-        {/* Right Actions: FX Calculator, API Hub, Profile & TOP RIGHT MENU */}
+        {/* Right Actions: FX Calculator, Notifications, Profile & TOP RIGHT MENU */}
         <div className="flex items-center gap-2">
           
           {/* FX Calculator Quick Trigger */}
@@ -170,16 +168,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Calculator className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">FX Calc</span>
-          </button>
-
-          {/* API Docs Button */}
-          <button
-            onClick={onOpenApiHub}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-100 text-xs font-bold rounded-xl border border-slate-700 shadow-2xs transition cursor-pointer"
-            title="Inspect API Endpoints & Config"
-          >
-            <Code className="w-3.5 h-3.5 text-amber-400" />
-            <span>API Docs</span>
           </button>
 
           {/* NOTIFICATION CENTER BUTTON */}
@@ -404,7 +392,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* QUICK UTILITY TOOLS */}
               <div className="space-y-2 pt-3 border-t border-slate-100">
                 <p className="px-2 text-[10px] font-black uppercase tracking-wider text-slate-400">
-                  DEVELOPER & TOOLS
+                  QUICK TOOLS
                 </p>
 
                 <button
@@ -419,20 +407,6 @@ export const Header: React.FC<HeaderProps> = ({
                     <span>Real-Time FX Calculator</span>
                   </div>
                   <ChevronRight className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowMobileDrawer(false);
-                    onOpenApiHub();
-                  }}
-                  className="w-full flex items-center justify-between p-3 bg-slate-900 text-white rounded-2xl text-xs font-bold transition"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Code className="w-4 h-4 text-amber-400" />
-                    <span>Developer API Hub</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
                 </button>
               </div>
             </div>

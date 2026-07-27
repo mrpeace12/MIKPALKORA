@@ -12,10 +12,10 @@ import { ProfileView } from './components/ProfileView';
 import { SideDrawer } from './components/SideDrawer';
 import { BottomNav } from './components/BottomNav';
 import { OnboardingModal } from './components/OnboardingModal';
-import { ApiHubModal } from './components/ApiHubModal';
 import { FxCalculatorModal } from './components/FxCalculatorModal';
 import { DepositModal } from './components/DepositModal';
 import { LandingPage } from './components/LandingPage';
+import { AdminPortal } from './components/AdminPortal';
 import { Shield, Lock, Globe, Building2 } from 'lucide-react';
 
 export default function App() {
@@ -27,71 +27,23 @@ export default function App() {
   });
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<'SIGN_UP' | 'LOGIN'>('SIGN_UP');
+  const [showAdminPortal, setShowAdminPortal] = useState<boolean>(() => {
+    return window.location.hash === '#admin' || window.location.search.includes('admin=true');
+  });
 
-  import { api } from './api';
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#admin' || window.location.search.includes('admin=true')) {
+        setShowAdminPortal(true);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
-useEffect(() => {
-  const token = api.getToken();
-  if (token) {
-    api.me()
-      .then(data => {
-        setIsAuthenticated(true);
-        // Set user data from data.user
-      })
-      .catch(() => {
-        api.clearToken();
-        setIsAuthenticated(false);
-      });
-  }
-}, []);
-
-// Sign in function:
-const handleSignIn = async (email: string, password: string) => {
-  try {
-    const data = await api.signin(email, password);
-    api.setToken(data.token);
-    setIsAuthenticated(true);
-    // Set user data from data.user
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-// Sign up function:
-const handleSignUp = async (email: string, password: string, full_name: string, username?: string) => {
-  try {
-    const data = await api.signup(email, password, full_name, username);
-    api.setToken(data.token);
-    setIsAuthenticated(true);
-    // Set user data from data.user
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-// Sign out:
-const handleSignOut = async () => {
-  try {
-    await api.signout();
-  } catch {}
-  api.clearToken();
-  setIsAuthenticated(false);
-};
-
-// Load dashboard:
-const loadDashboard = async () => {
-  try {
-    const data = await api.getDashboard();
-    // data.user, data.wallets, data.recent_transactions, data.payment_channels
-  } catch (err) {
-    if (err.message.includes('Unauthorized')) {
-      api.clearToken();
-      setIsAuthenticated(false);
-    }
-  }
-};
-
-  const [showApiHub, setShowApiHub] = useState<boolean>(false);
+  useEffect(() => {
+    localStorage.setItem('mikpal_auth_state', JSON.stringify(isAuthenticated));
+  }, [isAuthenticated]);
   const [showFxCalc, setShowFxCalc] = useState<boolean>(false);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
   const [showSideDrawer, setShowSideDrawer] = useState<boolean>(false);
@@ -540,6 +492,22 @@ const loadDashboard = async () => {
     }));
   };
 
+  // ADMIN ROUTE GUARD: Show Master Operational Admin Portal
+  if (showAdminPortal) {
+    return (
+      <AdminPortal
+        onExitAdmin={() => {
+          setShowAdminPortal(false);
+          if (window.location.hash === '#admin') {
+            window.history.pushState('', document.title, window.location.pathname + window.location.search);
+          }
+        }}
+        userProfiles={userProfiles}
+        onUpdateProfiles={setUserProfiles}
+      />
+    );
+  }
+
   // UNAUTHENTICATED ROUTE GUARD: Show Public Landing Page
   if (!isAuthenticated) {
     return (
@@ -559,7 +527,7 @@ const loadDashboard = async () => {
             setActiveTab('OVERVIEW');
           }}
           onOpenFxCalc={() => setShowFxCalc(true)}
-          onOpenApiHub={() => setShowApiHub(true)}
+          onOpenAdminPortal={() => setShowAdminPortal(true)}
         />
 
         {/* Onboarding & Sign In Modal */}
@@ -568,12 +536,6 @@ const loadDashboard = async () => {
           initialMode={authMode}
           onClose={() => setShowOnboarding(false)}
           onCompleteOnboarding={handleCompleteOnboarding}
-        />
-
-        {/* Developer API Hub Modal */}
-        <ApiHubModal
-          isOpen={showApiHub}
-          onClose={() => setShowApiHub(false)}
         />
 
         {/* Real-Time FX Calculator Modal */}
@@ -594,12 +556,12 @@ const loadDashboard = async () => {
         user={activeUser}
         activeTab={activeTab}
         onChangeTab={setActiveTab}
-        onOpenApiHub={() => setShowApiHub(true)}
         onOpenOnboarding={() => {
           setAuthMode('SIGN_UP');
           setShowOnboarding(true);
         }}
         onOpenFxCalc={() => setShowFxCalc(true)}
+        onOpenAdminPortal={() => setShowAdminPortal(true)}
       />
 
       {/* 2. MAIN RIGHT CONTENT CONTAINER */}
@@ -610,7 +572,6 @@ const loadDashboard = async () => {
           user={activeUser}
           activeTab={activeTab}
           onChangeTab={setActiveTab}
-          onOpenApiHub={() => setShowApiHub(true)}
           onOpenOnboarding={() => {
             setAuthMode('SIGN_UP');
             setShowOnboarding(true);
@@ -712,12 +673,6 @@ const loadDashboard = async () => {
         onCompleteOnboarding={handleCompleteOnboarding}
       />
 
-      {/* Developer API Hub Modal */}
-      <ApiHubModal
-        isOpen={showApiHub}
-        onClose={() => setShowApiHub(false)}
-      />
-
       {/* Real-Time FX Calculator Modal */}
       <FxCalculatorModal
         isOpen={showFxCalc}
@@ -740,7 +695,6 @@ const loadDashboard = async () => {
         activeTab={activeTab}
         onChangeTab={setActiveTab}
         onUpdateUser={handleUpdateUserProfile}
-        onOpenApiHub={() => setShowApiHub(true)}
         onOpenOnboarding={() => {
           setAuthMode('SIGN_UP');
           setShowOnboarding(true);

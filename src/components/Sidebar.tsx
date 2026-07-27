@@ -25,18 +25,18 @@ interface SidebarProps {
   user: UserProfile;
   activeTab: 'OVERVIEW' | 'SEND' | 'CARDS' | 'KYC' | 'TRANSACTIONS' | 'PROFILE';
   onChangeTab: (tab: 'OVERVIEW' | 'SEND' | 'CARDS' | 'KYC' | 'TRANSACTIONS' | 'PROFILE') => void;
-  onOpenApiHub: () => void;
   onOpenOnboarding: () => void;
   onOpenFxCalc: () => void;
+  onOpenAdminPortal?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   user,
   activeTab,
   onChangeTab,
-  onOpenApiHub,
   onOpenOnboarding,
   onOpenFxCalc,
+  onOpenAdminPortal,
 }) => {
   const countryInfo = COUNTRIES[user.country];
   const primaryAccount = user.bankAccounts.find((a) => a.isDefault) || user.bankAccounts[0];
@@ -263,20 +263,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      {/* BOTTOM CONTAINER: Developer API Hub & User Profile Tile */}
+      {/* BOTTOM CONTAINER: User Profile Tile */}
       <div className="pt-3 border-t border-slate-200/80 space-y-2.5">
         
-        {/* Developer API Docs Button */}
-        <button
-          onClick={onOpenApiHub}
-          className="w-full flex items-center justify-between px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl border border-slate-700 shadow-2xs transition"
-        >
-          <div className="flex items-center gap-2">
-            <Code className="w-3.5 h-3.5 text-amber-400" />
-            <span>Developer API Hub</span>
-          </div>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        </button>
+        {/* HQ Admin Portal Button if handler exists */}
+        {onOpenAdminPortal && (
+          <button
+            onClick={onOpenAdminPortal}
+            className="w-full flex items-center justify-between px-3 py-2 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 text-xs font-bold rounded-xl border border-emerald-800/80 shadow-2xs transition cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>HQ Admin Terminal</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-emerald-500" />
+          </button>
+        )}
 
         {/* User Profile Footer Tile */}
         <button

@@ -28,7 +28,7 @@ interface LandingPageProps {
   onOpenSignIn: () => void;
   onSelectDemoUser: (country: CountryCode) => void;
   onOpenFxCalc: () => void;
-  onOpenApiHub: () => void;
+  onOpenAdminPortal: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
@@ -36,7 +36,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenSignIn,
   onSelectDemoUser,
   onOpenFxCalc,
-  onOpenApiHub,
+  onOpenAdminPortal,
 }) => {
   // Live FX rate calculator snippet state
   const [sendAmount, setSendAmount] = useState<string>('100');
@@ -88,11 +88,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <a href="#cards" className="hover:text-white transition">Virtual Cards</a>
             <a href="#demo-accounts" className="hover:text-white transition">Instant Demo</a>
             <button
-              onClick={onOpenApiHub}
-              className="text-slate-300 hover:text-white transition flex items-center gap-1 cursor-pointer"
+              onClick={onOpenAdminPortal}
+              className="text-slate-400 hover:text-emerald-400 transition flex items-center gap-1 text-[11px] cursor-pointer"
+              title="Operational Admin Portal"
             >
-              <Code className="w-3.5 h-3.5 text-purple-400" />
-              <span>API Hub</span>
+              <Lock className="w-3 h-3 text-emerald-500" />
+              <span>HQ Admin</span>
             </button>
           </nav>
 
@@ -360,11 +361,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Feature 4 */}
             <div className="bg-slate-950 p-6 rounded-3xl border border-slate-800 hover:border-slate-700 transition space-y-3 text-left">
               <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-2xl w-fit border border-emerald-500/20">
-                <Code className="w-6 h-6" />
+                <Zap className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-white text-base">Developer API Hub</h3>
+              <h3 className="font-extrabold text-white text-base">Instant Settlement & Logs</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Robust RESTful API sandbox with instant API keys, Webhooks, and SDK documentation to power payout integration in your own apps.
+                Real-time transaction tracking, automated digital receipts, and downloadable activity statements for complete financial transparency.
               </p>
             </div>
 
@@ -380,7 +381,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
             <div>
               <span className="text-xs font-black uppercase tracking-widest text-[#00796B]">
-                Instant 1-Click Sandbox Test Drive
+                Instant 1-Click Demo Profiles
               </span>
               <h2 className="text-2xl font-extrabold text-white tracking-tight mt-1">
                 Explore Regional MIKPAL User Profiles
@@ -491,7 +492,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <p className="text-[11px] text-slate-400 leading-relaxed">
               MIKPAL is a next-generation regional financial infrastructure providing multi-currency accounts, zero-markup cross-border payouts, and virtual card issuance via certified payment partner rails.
             </p>
-            <p className="text-[10px] text-slate-400">MIKPAL © 2026</p>
+            <p className="text-[10px] text-slate-400 flex items-center gap-2">
+              <span>MIKPAL © 2026</span>
+              <span>•</span>
+              <button
+                onClick={onOpenAdminPortal}
+                className="text-slate-500 hover:text-emerald-400 underline cursor-pointer"
+              >
+                Admin HQ Command
+              </button>
+            </p>
           </div>
 
           <div>
@@ -500,7 +510,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <li><a href="#about" className="hover:text-white">Multi-Currency Accounts</a></li>
               <li><a href="#about" className="hover:text-white">Cross-Border Transfers</a></li>
               <li><a href="#cards" className="hover:text-white">USD Virtual Cards</a></li>
-              <li><button onClick={onOpenApiHub} className="hover:text-white">Developer API Sandbox</button></li>
+              <li><a href="#fx-rates" className="hover:text-white">Live FX Converter</a></li>
             </ul>
           </div>
 

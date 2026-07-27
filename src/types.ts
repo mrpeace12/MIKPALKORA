@@ -118,3 +118,43 @@ export interface RecipientProfile {
   avatar: string;
   defaultCurrency: string;
 }
+
+export interface AdminAuditLog {
+  id: string;
+  timestamp: string;
+  actor: string;
+  category: 'LOGIN' | 'SETTLEMENT' | 'KYC_OVERRIDE' | 'CARD_MANAGEMENT' | 'DISBURSEMENT' | 'CHARGEBACK' | 'SETTINGS';
+  action: string;
+  details: string;
+  ipAddress: string;
+  status: 'SUCCESS' | 'WARNING' | 'FAILED';
+}
+
+export interface AdminChargeback {
+  id: string;
+  reference: string;
+  paymentReference: string;
+  customerName: string;
+  customerEmail: string;
+  amount: number;
+  currency: string;
+  deadline: string;
+  reason: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'PARTIAL' | 'WON' | 'LOST';
+  approvedAmount?: number;
+  evidenceUrl?: string;
+  createdAt: string;
+}
+
+export interface WebhookEventLog {
+  id: string;
+  event: string; // e.g. "charge.success", "payout.success", "direct_debit.auth"
+  reference: string;
+  url: string;
+  httpStatus: number;
+  attempts: number;
+  status: 'DELIVERED' | 'FAILED' | 'RETRYING';
+  timestamp: string;
+  payload: Record<string, any>;
+}
+
