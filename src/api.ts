@@ -36,6 +36,11 @@ async function apiRequest<T = any>(path: string, options: RequestInit = {}): Pro
 }
 
 export const api = {
+  // Token management
+  getToken,
+  setToken,
+  clearToken,
+
   // Auth
   signup: (data: { email: string; password: string; full_name: string; username?: string; country?: string; phone?: string }) =>
     apiRequest('/api/auth/signup', { method: 'POST', body: JSON.stringify(data) }),
@@ -105,9 +110,4 @@ export const api = {
   // System & Health & Rates
   getRates: () => apiRequest('/api/rates'),
   getHealth: () => apiRequest('/api/health'),
-
-  // Token management
-  getToken,
-  setToken,
-  clearToken,
 };

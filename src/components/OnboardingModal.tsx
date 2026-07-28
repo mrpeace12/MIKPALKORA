@@ -1,14 +1,85 @@
 import React, { useState } from 'react';
 import { CountryCode, UserProfile, BankAccount, WalletBalance } from '../types';
 import { COUNTRIES } from '../data/mockData';
-import { X, CheckCircle2, ShieldCheck, Camera, ArrowRight, ArrowLeft, Lock, Building2, Sparkles, Mail, KeyRound, User, Globe, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { X, CheckCircle2, ShieldCheck, Camera, ArrowRight, ArrowLeft, Lock, Building2, Sparkles, Mail, KeyRound, User, Globe, AlertTriangle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Logo } from './Logo';
+import { api } from '../api';
 
 interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCompleteOnboarding: (newProfile: UserProfile) => void;
   initialMode?: 'SIGN_UP' | 'LOGIN' | 'KYC_ONLY';
+}
+
+function formatBackendUserToProfile(backendUser: any, defaultCountry: CountryCode = 'GH'): UserProfile {
+  const country = (backendUser.country || defaultCountry) as CountryCode;
+  const countryInfo = COUNTRIES[country] || COUNTRIES['GH'];
+
+  const initialWallets: Record<string, WalletBalance> = {};
+  if (Array.isArray(backendUser.wallets) && backendUser.wallets.length > 0) {
+    backendUser.wallets.forEach((w: any) => {
+      const c = w.currency;
+      const info = COUNTRIES[c as CountryCode];
+      initialWallets[c] = {
+        currency: c,
+        currencySymbol: info ? info.currencySymbol : (c === 'USD' ? '$' : c),
+        available: Number(w.balance) || 0,
+        pending: 0,
+        flag: info ? info.flag : (c === 'USD' ? '🇺🇸' : '🌍'),
+      };
+    });
+  } else {
+    initialWallets[countryInfo.currency] = {
+      currency: countryInfo.currency,
+      currencySymbol: countryInfo.currencySymbol,
+      available: 1250.0,
+      pending: 0,
+      flag: countryInfo.flag,
+    };
+    initialWallets['USD'] = {
+      currency: 'USD',
+      currencySymbol: '$',
+      available: 250.0,
+      pending: 0,
+      flag: '🇺🇸',
+    };
+  }
+
+  return {
+    id: backendUser.id || `usr_${Date.now()}`,
+    username: backendUser.username || backendUser.email?.split('@')[0] || 'member',
+    email: backendUser.email || 'user@mikpal.io',
+    fullName: backendUser.full_name || backendUser.email || 'MIKPAL Member',
+    country: country,
+    phone: backendUser.phone || `${countryInfo.phoneCode} 20 123 4567`,
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
+    kycStatus: (backendUser.kyc_status as any) || 'VERIFIED',
+    kycDocuments: [
+      {
+        docType: countryInfo.kycDocName,
+        docNumber: 'VERIFIED-ID-901',
+        verifiedAt: new Date().toISOString().split('T')[0],
+        status: 'VERIFIED',
+      },
+    ],
+    wallets: initialWallets,
+    bankAccounts: [
+      {
+        id: `vba_${country.toLowerCase()}_${Date.now()}`,
+        type: countryInfo.supportsLocalVBA ? 'LOCAL' : 'USD_GLOBAL',
+        accountName: backendUser.full_name || 'Verified Member',
+        accountNumber: `${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+        bankName: countryInfo.localBankName || 'US Partner Bank',
+        currency: countryInfo.currency,
+        status: 'ACTIVE',
+        isDefault: true,
+      },
+    ],
+    cards: [],
+    transactions: [],
+    securityPin: '1234',
+  };
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
@@ -39,6 +110,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [authPassword, setAuthPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [otpCode, setOtpCode] = useState('849201');
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
@@ -72,24 +145,60 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const handleSignUpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!authEmail || !authPassword) {
-      alert('Please enter a valid email and password');
+      setAuthError('Please enter a valid email and password');
       return;
     }
+    setAuthError('');
     setFlowStage('OTP_VERIFY');
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!authEmail || !authPassword) {
-      alert('Please enter your email and password');
+      setAuthError('Please enter your email and password');
       return;
     }
-    setFlowStage('PROFILE_SETUP');
+    setIsLoading(true);
+    setAuthError('');
+    try {
+      const res = await api.signin(authEmail, authPassword);
+      if (res.token) {
+        api.setToken(res.token);
+      }
+      const profile = formatBackendUserToProfile(res.user);
+      onCompleteOnboarding(profile);
+      onClose();
+    } catch (err: any) {
+      setAuthError(err.message || 'Invalid email or password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleQuickDemoLogin = async (email: string) => {
+    setIsLoading(true);
+    setAuthError('');
+    setAuthEmail(email);
+    setAuthPassword('password123');
+    try {
+      const res = await api.signin(email, 'password123');
+      if (res.token) {
+        api.setToken(res.token);
+      }
+      const profile = formatBackendUserToProfile(res.user);
+      onCompleteOnboarding(profile);
+      onClose();
+    } catch (err: any) {
+      setAuthError(err.message || 'Demo login failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleAuth = () => {
     setAuthEmail('alex.mensah@gmail.com');
     setFullName('Alex Mensah');
+    setAuthError('');
     setFlowStage('PROFILE_SETUP');
   };
 
@@ -98,47 +207,34 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     setFlowStage('PROFILE_SETUP');
   };
 
-  const handleCompleteProfileSetup = (e: React.FormEvent) => {
+  const handleCompleteProfileSetup = async (e: React.FormEvent) => {
     e.preventDefault();
     const tag = username.replace(/^@/, '').trim() || 'user_' + Math.floor(Math.random() * 900 + 100);
     const userFullName = fullName.trim() || 'MIKPAL Member';
 
-    const initialWallets: Record<string, WalletBalance> = {};
-    initialWallets[currentCountryInfo.currency] = {
-      currency: currentCountryInfo.currency,
-      currencySymbol: currentCountryInfo.currencySymbol,
-      available: 0.0,
-      pending: 0.0,
-      flag: currentCountryInfo.flag,
-    };
-    initialWallets['USD'] = {
-      currency: 'USD',
-      currencySymbol: '$',
-      available: 0.0,
-      pending: 0.0,
-      flag: '🇺🇸',
-    };
+    setIsLoading(true);
+    setAuthError('');
+    try {
+      const res = await api.signup({
+        email: authEmail || `${tag}@mikpal.io`,
+        password: authPassword || 'password123',
+        full_name: userFullName,
+        username: tag,
+        country: selectedCountry,
+        phone: `${currentCountryInfo.phoneCode} 20 123 4567`,
+      });
 
-    // Low-friction Tier 0 account (UNVERIFIED initially)
-    const newProfile: UserProfile = {
-      id: `usr_${selectedCountry.toLowerCase()}_${Date.now()}`,
-      username: tag,
-      email: authEmail || `${tag}@mikpal.io`,
-      fullName: userFullName,
-      country: selectedCountry,
-      phone: `${currentCountryInfo.phoneCode} 20 123 4567`,
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
-      kycStatus: 'UNVERIFIED',
-      kycDocuments: [],
-      wallets: initialWallets,
-      bankAccounts: [],
-      cards: [],
-      transactions: [],
-      securityPin: '1234',
-    };
-
-    onCompleteOnboarding(newProfile);
-    onClose();
+      if (res.token) {
+        api.setToken(res.token);
+      }
+      const profile = formatBackendUserToProfile(res.user, selectedCountry);
+      onCompleteOnboarding(profile);
+      onClose();
+    } catch (err: any) {
+      setAuthError(err.message || 'Signup failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const startLivenessScan = () => {
@@ -283,6 +379,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </p>
               </div>
 
+              {authError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span>{authError}</span>
+                </div>
+              )}
+
               {/* Google One-Tap Auth Button */}
               <button
                 type="button"
@@ -393,10 +496,20 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-[#F26522] to-[#E85D04] hover:opacity-95 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-orange-500/20 transition flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  disabled={isLoading}
+                  className="w-full py-3 bg-gradient-to-r from-[#F26522] to-[#E85D04] hover:opacity-95 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-orange-500/20 transition flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-60"
                 >
-                  <span>Create Account</span>
-                  <ArrowRight className="w-4 h-4" />
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Creating Account...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Create Account</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
 
                 {/* Compliance & Terms Notice */}
@@ -411,7 +524,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <p className="text-xs text-slate-500">
                   Already have a MIKPAL account?{' '}
                   <button
-                    onClick={() => setFlowStage('AUTH_LOGIN')}
+                    onClick={() => { setAuthError(''); setFlowStage('AUTH_LOGIN'); }}
                     className="font-bold text-[#F26522] hover:underline cursor-pointer"
                   >
                     Sign In
@@ -429,6 +542,44 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <p className="text-slate-500 text-xs mt-1">
                   Access your multi-currency balances, virtual cards, and payouts.
                 </p>
+              </div>
+
+              {authError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              {/* Quick Demo Credentials */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
+                <span className="font-bold text-slate-700 block mb-1.5">Instant 1-Click Demo Logins:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemoLogin('kwame@mikpal.com')}
+                    disabled={isLoading}
+                    className="px-2.5 py-1 bg-white hover:bg-orange-50 border border-slate-200 hover:border-[#F26522] rounded-lg text-[11px] font-semibold text-slate-800 transition cursor-pointer"
+                  >
+                    🇬🇭 Kwame (GHS)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemoLogin('amina@mikpal.com')}
+                    disabled={isLoading}
+                    className="px-2.5 py-1 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-500 rounded-lg text-[11px] font-semibold text-slate-800 transition cursor-pointer"
+                  >
+                    🇳🇬 Amina (NGN)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemoLogin('juma@mikpal.com')}
+                    disabled={isLoading}
+                    className="px-2.5 py-1 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-500 rounded-lg text-[11px] font-semibold text-slate-800 transition cursor-pointer"
+                  >
+                    🇰🇪 Juma (KES)
+                  </button>
+                </div>
               </div>
 
               {/* Google Quick Sign-In */}
@@ -507,10 +658,20 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  disabled={isLoading}
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-60"
                 >
-                  <span>Sign In</span>
-                  <ArrowRight className="w-4 h-4" />
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Signing in...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Sign In</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </form>
 
@@ -518,7 +679,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <p className="text-xs text-slate-500">
                   Don&apos;t have an account yet?{' '}
                   <button
-                    onClick={() => setFlowStage('AUTH_SIGN_UP')}
+                    onClick={() => { setAuthError(''); setFlowStage('AUTH_SIGN_UP'); }}
                     className="font-bold text-[#F26522] hover:underline cursor-pointer"
                   >
                     Sign Up
