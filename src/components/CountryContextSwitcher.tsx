@@ -59,12 +59,12 @@ export const CountryContextSwitcher: React.FC<CountryContextSwitcherProps> = ({
         {/* Right Action Buttons */}
         <div className="flex items-center gap-2 shrink-0">
           <button
-            id="onboarding-simulator-btn"
+            id="onboarding-setup-btn"
             onClick={onOpenOnboarding}
             className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-[#00796B] to-[#0F4C5C] hover:opacity-95 text-white text-xs font-semibold rounded-full shadow transition-all duration-150 border border-teal-500/30"
           >
             <UserPlus className="w-3.5 h-3.5 text-teal-200" />
-            <span>Simulate Sign-Up & KYC</span>
+            <span>Sign-Up & KYC</span>
           </button>
         </div>
 

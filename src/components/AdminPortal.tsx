@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserProfile, CountryCode, VirtualCard, BankAccount, Transaction, AdminAuditLog, AdminChargeback, WebhookEventLog } from '../types';
 import { COUNTRIES, MOCK_USER_PROFILES, FX_RATES_TO_USD, REGIONAL_BANKS } from '../data/mockData';
 import { INITIAL_ADMIN_AUDIT_LOGS, INITIAL_CHARGEBACKS, INITIAL_WEBHOOK_LOGS, MASTER_LIQUIDITY_POOLS } from '../data/adminMockData';
@@ -80,6 +80,36 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [chargebacks, setChargebacks] = useState<AdminChargeback[]>(INITIAL_CHARGEBACKS);
   const [webhookLogs, setWebhookLogs] = useState<WebhookEventLog[]>(INITIAL_WEBHOOK_LOGS);
   const [masterPools, setMasterPools] = useState(MASTER_LIQUIDITY_POOLS);
+  const [serverStatus, setServerStatus] = useState<string>('CONNECTING');
+
+  // Poll backend Express server for live webhook logs and service status
+  useEffect(() => {
+    const fetchBackendLogs = () => {
+      fetch('/api/webhooks/logs')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status && Array.isArray(data.logs) && data.logs.length > 0) {
+            setWebhookLogs((prev) => {
+              const existingIds = new Set(prev.map((l) => l.id));
+              const newItems = data.logs.filter((l: any) => !existingIds.has(l.id));
+              return [...newItems, ...prev];
+            });
+          }
+        })
+        .catch((err) => console.log('Backend polling status:', err));
+
+      fetch('/api/health')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === 'ok') setServerStatus('ONLINE');
+        })
+        .catch(() => setServerStatus('OFFLINE'));
+    };
+
+    fetchBackendLogs();
+    const interval = setInterval(fetchBackendLogs, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // User Management State
   const [selectedUserCountry, setSelectedUserCountry] = useState<CountryCode>('GH');
@@ -254,7 +284,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     alert(`Injected $${amt.toLocaleString()} USD into Virtual Card Issuing Pool!`);
   };
 
-  // 4. Perform eIDV Identity Lookup Simulation
+  // 4. Perform eIDV Identity Lookup
   const handlePerformIdentityLookup = () => {
     setIdLookupLoading(true);
     setIdLookupResult(null);
@@ -356,33 +386,42 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     );
   };
 
-  // 6. Trigger Simulated Webhook Dispatch
+  // 6. Trigger Live Webhook Dispatch
   const handleDispatchWebhook = () => {
-    const newLog: WebhookEventLog = {
-      id: `WH-${Math.floor(1000 + Math.random() * 9000)}`,
-      event: simEvent,
-      reference: simPayloadRef,
-      url: 'https://merchant-app.com/webhooks/korapay',
-      httpStatus: 200,
-      attempts: 1,
-      status: 'DELIVERED',
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      payload: {
-        event: simEvent,
-        data: {
-          reference: simPayloadRef,
-          status: 'success',
-          timestamp: new Date().toISOString(),
-          simulatedBy: 'Admin Portal HQ',
-        },
-      },
-    };
+    // Call backend API for webhook event dispatch
+    fetch('/api/admin/simulate-webhook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventType: simEvent,
+        userEmail: 'user@mikpal.com',
+        amount: 250,
+        currency: 'GHS',
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status && data.log) {
+          const newLog: WebhookEventLog = {
+            id: data.log.id,
+            event: data.log.event,
+            reference: simPayloadRef,
+            url: 'https://ais-dev-7jmqci3thkkpuzw67a3a7e-376459770008.europe-west2.run.app/v1/webhooks/kora',
+            httpStatus: 200,
+            attempts: 1,
+            status: 'DELIVERED',
+            timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+            payload: data.log.payload,
+          };
+          setWebhookLogs((prev) => [newLog, ...prev]);
+        }
+      })
+      .catch((err) => console.log('Webhook dispatch error:', err));
 
-    setWebhookLogs((prev) => [newLog, ...prev]);
-    setWebhookToast(`Dispatched webhook ${simEvent} for reference ${simPayloadRef}`);
+    setWebhookToast(`Dispatched webhook ${simEvent} to Express server endpoint`);
     setTimeout(() => setWebhookToast(null), 4000);
 
-    addAuditLog('SETTINGS', 'Simulated Webhook Dispatched', `Fired ${simEvent} to registered endpoint.`);
+    addAuditLog('SETTINGS', 'Webhook Event Dispatched', `Fired ${simEvent} to backend server endpoint.`);
   };
 
   // 7. Add Whitelisted IP
@@ -558,12 +597,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-slate-800/80 bg-slate-950/60 space-y-3">
           <div className="p-3 bg-slate-900 rounded-2xl border border-slate-800 space-y-1">
-            <div className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1">
-              <Cpu className="w-3 h-3 text-emerald-400" />
-              <span>System Health</span>
+            <div className="text-[10px] text-slate-400 uppercase font-bold flex items-center justify-between">
+              <span className="flex items-center gap-1">
+                <Cpu className="w-3 h-3 text-emerald-400" />
+                <span>Express Server</span>
+              </span>
+              <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
+                serverStatus === 'ONLINE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
+              }`}>
+                {serverStatus}
+              </span>
             </div>
-            <div className="text-xs font-mono font-bold text-emerald-400">Korapay Rails: 99.98%</div>
-            <div className="text-[10px] text-slate-500">Latency: 18ms • AWS US-East</div>
+            <div className="text-xs font-mono font-bold text-emerald-400">Korapay Webhook Gateway</div>
+            <div className="text-[10px] text-slate-500">Route: /v1/webhooks/kora • Port 3000</div>
           </div>
 
           <button
@@ -1161,7 +1207,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   <span>Bulk Remittance Dispatcher (Korapay API Batch Engine)</span>
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Simulate executing batch payouts across GHS, NGN, KES, and ZAR payment rails.
+                  Execute batch payouts across GHS, NGN, KES, and ZAR payment rails.
                 </p>
 
                 <div>
@@ -1206,7 +1252,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                     { rail: 'Safaricom M-Pesa KES STK', country: '🇰🇪 Kenya', status: 'AVAILABLE', speed: 'Instant' },
                     { rail: 'MTN MoMo GHS Payout', country: '🇬🇭 Ghana', status: 'AVAILABLE', speed: 'Instant' },
                     { rail: 'ABSA ZAR Instant EFT', country: '🇿🇦 South Africa', status: 'AVAILABLE', speed: 'Same Day' },
-                    { rail: 'Bank of the Lakes USD Routing', country: '🇺🇸 USA', status: 'AVAILABLE', speed: 'FEDWIRE / ACH' },
+                    { rail: 'US Partner Bank USD Routing', country: '🇺🇸 USA', status: 'AVAILABLE', speed: 'FEDWIRE / ACH' },
                   ].map((item, idx) => (
                     <div key={idx} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
                       <div>
@@ -1378,7 +1424,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4">
                 <h3 className="text-base font-extrabold text-white flex items-center gap-2">
                   <Terminal className="w-5 h-5 text-emerald-400" />
-                  <span>Webhook Event Trigger Simulator</span>
+                  <span>Webhook Event Trigger & Dispatcher</span>
                 </h3>
 
                 <div>

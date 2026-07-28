@@ -20,7 +20,7 @@ export const KycVaultView: React.FC<KycVaultViewProps> = ({ user, onUpdateKycDoc
   const countryInfo = COUNTRIES[user.country];
   const isVerified = user.kycStatus === 'VERIFIED';
 
-  const handleSimulateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0].name);
       setUploading(true);
@@ -196,12 +196,12 @@ export const KycVaultView: React.FC<KycVaultViewProps> = ({ user, onUpdateKycDoc
               <div className="flex justify-between text-slate-600">
                 <span>Doc Reference:</span>
                 <span className="font-bold text-slate-900">
-                  {user.kycDocuments?.[0]?.docNumber || 'VERIFIED-ID-881'}
+                  {user.kycDocuments[0]?.docNumber || 'VERIFIED-ID-881'}
                 </span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Verified On:</span>
-                <span className="font-bold text-slate-900">{user.kycDocuments?.[0]?.verifiedAt || '2026-03-01'}</span>
+                <span className="font-bold text-slate-900">{user.kycDocuments[0]?.verifiedAt || '2026-03-01'}</span>
               </div>
             </div>
           </div>
@@ -253,7 +253,7 @@ export const KycVaultView: React.FC<KycVaultViewProps> = ({ user, onUpdateKycDoc
           <UploadCloud className="w-8 h-8 text-slate-400" />
           <span className="text-xs font-bold text-slate-700">Click to select file or drag & drop</span>
           <span className="text-[11px] text-slate-400">PDF, JPG or PNG (max. 10MB)</span>
-          <input type="file" onChange={handleSimulateUpload} className="hidden" accept="image/*,application/pdf" />
+          <input type="file" onChange={handleFileUpload} className="hidden" accept="image/*,application/pdf" />
         </label>
 
         {uploading && (

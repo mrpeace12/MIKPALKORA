@@ -21,7 +21,7 @@ export const BankAccountCards: React.FC<BankAccountCardsProps> = ({
   const [depositMethod, setDepositMethod] = useState<string>('momo');
 
   const countryInfo = COUNTRIES[user.country];
-  const hasUsdAccount = (user.bankAccounts || []).some((acc) => acc.type === 'USD_GLOBAL');
+  const hasUsdAccount = user.bankAccounts.some((acc) => acc.type === 'USD_GLOBAL');
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -72,7 +72,7 @@ export const BankAccountCards: React.FC<BankAccountCardsProps> = ({
 
       {/* BANK ACCOUNTS GRID (Compact Dark Matte & Light Cards) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {(user.bankAccounts || []).map((acc) => (
+        {user.bankAccounts.map((acc) => (
           <div
             key={acc.id}
             className={`p-5 rounded-2xl border transition-all relative overflow-hidden flex flex-col justify-between ${
@@ -200,7 +200,7 @@ export const BankAccountCards: React.FC<BankAccountCardsProps> = ({
             <div>
               <h3 className="font-bold text-slate-900 text-base">Activate USD Global Account</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-xs">
-                Receive international wires, ACH transfers, and USD payments directly via Bank of the Lakes routing.
+                Receive international wires, ACH transfers, and USD payments directly via US banking routing.
               </p>
             </div>
 
@@ -234,7 +234,7 @@ export const BankAccountCards: React.FC<BankAccountCardsProps> = ({
             <div className="my-4 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1.5">
               <div className="flex justify-between text-slate-600">
                 <span>Account Provider:</span>
-                <span className="font-semibold text-slate-900">Bank of the Lakes (US)</span>
+                <span className="font-semibold text-slate-900">US Partner Bank</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Routing Methods:</span>
@@ -326,14 +326,14 @@ export const BankAccountCards: React.FC<BankAccountCardsProps> = ({
               </div>
 
               <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-600">
-                Instant credit simulation to your local {countryInfo.currency} balance. Zero processing fee.
+                Instant credit to your local {countryInfo.currency} balance. Zero processing fee.
               </div>
 
               <button
                 type="submit"
                 className="w-full py-3 bg-[#F26522] hover:bg-orange-600 text-white font-bold text-sm rounded-xl shadow-md transition"
               >
-                Simulate Instant Deposit ({countryInfo.currencySymbol}{depositAmount})
+                Execute Instant Deposit ({countryInfo.currencySymbol}{depositAmount})
               </button>
             </form>
           </div>

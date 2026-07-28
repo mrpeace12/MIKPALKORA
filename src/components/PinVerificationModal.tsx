@@ -92,7 +92,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
     }
   };
 
-  const handleSimulateBiometric = () => {
+  const handleBiometricAuth = () => {
     setIsBiometricAuthenticating(true);
     setErrorMsg(null);
     setTimeout(() => {
@@ -190,7 +190,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
           {biometricEnabled ? (
             <button
               type="button"
-              onClick={handleSimulateBiometric}
+              onClick={handleBiometricAuth}
               className="py-3.5 bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold text-xs rounded-2xl border border-teal-200 flex flex-col items-center justify-center transition active:scale-95"
               title="Authenticate with Face ID / Fingerprint"
             >

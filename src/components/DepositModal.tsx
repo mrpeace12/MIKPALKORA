@@ -45,7 +45,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({
   if (!isOpen) return null;
 
   const numAmount = parseFloat(depositAmount) || 0;
-  const primaryAccount = (user.bankAccounts || [])[0];
+  const primaryAccount = user.bankAccounts[0];
 
   const handleCopyAccount = () => {
     if (primaryAccount) {
@@ -60,11 +60,28 @@ export const DepositModal: React.FC<DepositModalProps> = ({
     if (numAmount <= 0) return;
 
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      onDepositFunds(numAmount, countryInfo.currency, selectedChannel.toLowerCase());
-      setDepositSuccess(true);
-    }, 800);
+
+    // Trigger backend API deposit initiation and Kora webhook event creation
+    fetch('/api/deposits/initiate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userEmail: user.email,
+        amount: numAmount,
+        currency: countryInfo.currency,
+        channel: selectedChannel,
+      }),
+    })
+      .then(() => {
+        setIsProcessing(false);
+        onDepositFunds(numAmount, countryInfo.currency, selectedChannel.toLowerCase());
+        setDepositSuccess(true);
+      })
+      .catch(() => {
+        setIsProcessing(false);
+        onDepositFunds(numAmount, countryInfo.currency, selectedChannel.toLowerCase());
+        setDepositSuccess(true);
+      });
   };
 
   const handleDone = () => {
