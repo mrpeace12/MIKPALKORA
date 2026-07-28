@@ -38,7 +38,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       id: 'CARDS' as const,
       label: 'Cards',
       icon: CreditCard,
-      badge: user.cards.length > 0 ? user.cards.length : null,
+      badge: (user.cards?.length || 0) > 0 ? (user.cards?.length || 0) : null,
     },
     {
       id: 'PROFILE' as const,

@@ -196,12 +196,12 @@ export const KycVaultView: React.FC<KycVaultViewProps> = ({ user, onUpdateKycDoc
               <div className="flex justify-between text-slate-600">
                 <span>Doc Reference:</span>
                 <span className="font-bold text-slate-900">
-                  {user.kycDocuments[0]?.docNumber || 'VERIFIED-ID-881'}
+                  {user.kycDocuments?.[0]?.docNumber || 'VERIFIED-ID-881'}
                 </span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Verified On:</span>
-                <span className="font-bold text-slate-900">{user.kycDocuments[0]?.verifiedAt || '2026-03-01'}</span>
+                <span className="font-bold text-slate-900">{user.kycDocuments?.[0]?.verifiedAt || '2026-03-01'}</span>
               </div>
             </div>
           </div>

@@ -21,7 +21,7 @@ export const BankAccountCards: React.FC<BankAccountCardsProps> = ({
   const [depositMethod, setDepositMethod] = useState<string>('momo');
 
   const countryInfo = COUNTRIES[user.country];
-  const hasUsdAccount = user.bankAccounts.some((acc) => acc.type === 'USD_GLOBAL');
+  const hasUsdAccount = (user.bankAccounts || []).some((acc) => acc.type === 'USD_GLOBAL');
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -72,7 +72,7 @@ export const BankAccountCards: React.FC<BankAccountCardsProps> = ({
 
       {/* BANK ACCOUNTS GRID (Compact Dark Matte & Light Cards) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {user.bankAccounts.map((acc) => (
+        {(user.bankAccounts || []).map((acc) => (
           <div
             key={acc.id}
             className={`p-5 rounded-2xl border transition-all relative overflow-hidden flex flex-col justify-between ${

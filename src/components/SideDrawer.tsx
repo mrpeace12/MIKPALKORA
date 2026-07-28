@@ -61,7 +61,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
       label: 'Home & Accounts',
       desc: 'Virtual Bank Accounts & Balances',
       icon: LayoutDashboard,
-      badge: `${user.bankAccounts.length} Active`,
+      badge: `${(user.bankAccounts?.length || 0)} Active`,
     },
     {
       id: 'SEND' as const,
@@ -75,7 +75,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
       label: 'Virtual Cards',
       desc: 'USD Visa & Mastercard Issuance',
       icon: CreditCard,
-      badge: user.cards.length > 0 ? `${user.cards.length} Cards` : 'Instant',
+      badge: (user.cards?.length || 0) > 0 ? `${(user.cards?.length || 0)} Cards` : 'Instant',
     },
     {
       id: 'PROFILE' as const,

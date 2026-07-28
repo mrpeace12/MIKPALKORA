@@ -45,7 +45,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({
   if (!isOpen) return null;
 
   const numAmount = parseFloat(depositAmount) || 0;
-  const primaryAccount = user.bankAccounts[0];
+  const primaryAccount = (user.bankAccounts || [])[0];
 
   const handleCopyAccount = () => {
     if (primaryAccount) {

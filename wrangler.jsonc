@@ -1,0 +1,41 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mikpal",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-07-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true
+    }
+  },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "SESSIONS",
+      "id": "6d8e53a4ec49451f95657a516318170a"
+    },
+    {
+      "binding": "RATE_LIMIT",
+      "id": "9fa1f043338442e08b8efcd59495d47f"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mikpal-db",
+      "database_id": "e730a464-4bf1-40e3-b976-4c5391b5bc33"
+    }
+  ],
+  "vars": {
+    "APP_NAME": "MIKPAL",
+    "APP_URL": "https://mikpal.com",
+    "KORAPAY_BASE_URL": "https://api.korapay.com",
+    "GOOGLE_CLIENT_ID": "103331962868-s7l2ofajl913v9kegilnj30mg29j9d23.apps.googleusercontent.com"
+  }
+}
