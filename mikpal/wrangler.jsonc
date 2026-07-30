@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mikpal",
+  "compatibility_date": "2026-07-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./worker/index.ts",
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    // This is your Korapay PUBLIC key — safe to expose, unlike KORA_SECRET_KEY.
+    // Replace with your real pk_test_... or pk_live_... key.
+    "KORA_PUBLIC_KEY": "pk_test_REPLACE_ME",
+    // Locks down CSRF checks and cookie scoping to your real domain.
+    "ALLOWED_ORIGIN": "https://mikpal.com",
+    "COOKIE_DOMAIN": "mikpal.com",
+    // Resend "from" address — must be on a domain you've verified in Resend.
+    "FROM_EMAIL": "MIKPAL <no-reply@mikpal.com>"
+  },
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mikpal-db",
+      // Replace with the ID printed by: wrangler d1 create mikpal-db
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+    }
+  ]
+}
